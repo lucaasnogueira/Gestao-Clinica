@@ -1,0 +1,122 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap');
+
+@layer base {
+  :root {
+    --background:   210 20% 98%;
+    --foreground:   215 28% 13%;
+
+    --card:         0 0% 100%;
+    --card-foreground: 215 28% 13%;
+
+    --popover:      0 0% 100%;
+    --popover-foreground: 215 28% 13%;
+
+    --primary:      211 91% 38%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary:    210 14% 93%;
+    --secondary-foreground: 215 22% 28%;
+
+    --muted:        210 14% 94%;
+    --muted-foreground: 215 16% 48%;
+
+    --accent:       211 91% 94%;
+    --accent-foreground: 211 91% 28%;
+
+    --destructive:  0 84% 58%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border:       214 20% 88%;
+    --input:        214 20% 88%;
+    --ring:         211 91% 38%;
+
+    --radius:       0.625rem;
+
+    /* Sidebar (light) */
+    --sidebar:            210 20% 98%;
+    --sidebar-foreground: 215 28% 13%;
+    --sidebar-border:     214 20% 88%;
+    --sidebar-accent:     210 14% 94%;
+    --sidebar-accent-foreground: 215 22% 28%;
+  }
+
+  .dark {
+    --background:   222 47% 6%;
+    --foreground:   210 40% 98%;
+
+    --card:         222 47% 8%;
+    --card-foreground: 210 40% 98%;
+
+    --popover:      222 47% 7%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary:      210 40% 98%;
+    --primary-foreground: 222 47% 11%;
+
+    --secondary:    217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted:        217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent:       217 33% 17%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive:  0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border:       217 33% 17%;
+    --input:        217 33% 17%;
+    --ring:         213 27% 84%;
+
+    /* Sidebar (dark) */
+    --sidebar:            222 47% 7%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-border:     217 33% 17%;
+    --sidebar-accent:     217 33% 17%;
+    --sidebar-accent-foreground: 210 40% 98%;
+  }
+
+  * { @apply border-border; }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  code, .font-mono, kbd {
+    font-family: 'DM Mono', ui-monospace, monospace;
+  }
+}
+
+@layer utilities {
+  /* Scrollbar fina */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar       { width: 4px; height: 4px; }
+  .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { background-color: hsl(var(--border)); border-radius: 2px; }
+
+  /* Paleta de status — agendamentos */
+  .status-SCHEDULED   { @apply bg-blue-50   text-blue-700   border-blue-200; }
+  .status-CONFIRMED   { @apply bg-green-50  text-green-700  border-green-200; }
+  .status-IN_PROGRESS { @apply bg-amber-50  text-amber-700  border-amber-200; }
+  .status-COMPLETED   { @apply bg-emerald-50 text-emerald-700 border-emerald-200; }
+  .status-CANCELLED   { @apply bg-red-50    text-red-700    border-red-200; }
+  .status-NO_SHOW     { @apply bg-gray-50   text-gray-600   border-gray-200; }
+
+  /* Paleta de pagamento */
+  .pay-PENDING    { @apply bg-amber-50 text-amber-700 border-amber-200; }
+  .pay-PAID       { @apply bg-green-50 text-green-700 border-green-200; }
+  .pay-PARTIAL    { @apply bg-blue-50  text-blue-700  border-blue-200; }
+  .pay-OVERDUE    { @apply bg-red-50   text-red-700   border-red-200; }
+  .pay-CANCELLED  { @apply bg-gray-50  text-gray-600  border-gray-200; }
+}
