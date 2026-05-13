@@ -1,6 +1,9 @@
 # Build Stage
 FROM node:20-alpine AS builder
 
+# Instalar dependências do sistema necessárias para o Prisma e NestJS
+RUN apk add --no-cache openssl libc6-compat
+
 WORKDIR /app
 
 # Instalar dependências globais necessárias
@@ -24,6 +27,9 @@ RUN npm run build
 # ---
 # Production Stage
 FROM node:20-alpine AS runner
+
+# Instalar dependências de runtime necessárias
+RUN apk add --no-cache openssl libc6-compat
 
 WORKDIR /app
 
