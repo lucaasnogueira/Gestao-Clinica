@@ -7,28 +7,47 @@ import { UpdateAppointmentStatusDto } from './dto/update-appointment-status.dto'
 import { PaginationQueryDto } from '../common/dto/pagination.dto';
 import { AppointmentStatus } from '@prisma/client';
 
+import { BillingService } from '../billing/billing.service';
+import { PaymentStatus } from '@prisma/client';
+
 @Injectable()
 export class AppointmentsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private billingService: BillingService,
+  ) {}
 
   async findAll(query: any) {
-    const { page = 1, limit = 20, doctorId, status, date, patientId } = query;
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 20;
     const skip = (page - 1) * limit;
 
+    const { doctorId, status, date, patientId } = query;
+
     const where: any = {};
-    if (doctorId) where.doctorId = doctorId;
-    if (patientId) where.patientId = patientId;
-    if (status) where.status = status;
-    if (date) {
-      const d = new Date(date);
-      const next = new Date(d);
-      next.setDate(next.getDate() + 1);
-      where.scheduledAt = { gte: d, lt: next };
+    if (doctorId && doctorId !== 'undefined') where.doctorId = doctorId;
+    if (patientId && patientId !== 'undefined') where.patientId = patientId;
+    if (status && status !== 'ALL') where.status = status;
+    
+    if (date && typeof date === 'string' && date.length >= 10) {
+      // Create date at 00:00:00 of the given day
+      const start = new Date(date);
+      start.setUTCHours(0, 0, 0, 0);
+      
+      const end = new Date(start);
+      end.setUTCDate(end.getUTCDate() + 1);
+      
+      where.scheduledAt = {
+        gte: start,
+        lt: end,
+      };
     }
 
     const [data, total] = await Promise.all([
       this.prisma.appointment.findMany({
-        where, skip, take: limit,
+        where,
+        skip,
+        take: limit,
         orderBy: { scheduledAt: 'asc' },
         include: {
           patient: { select: { id: true, fullName: true, phone: true } },
@@ -39,7 +58,15 @@ export class AppointmentsService {
       this.prisma.appointment.count({ where }),
     ]);
 
-    return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   async findOne(id: string) {
@@ -61,7 +88,7 @@ export class AppointmentsService {
   async create(dto: CreateAppointmentDto) {
     await this.checkConflicts(dto.doctorId, new Date(dto.scheduledAt), new Date(dto.endsAt));
 
-    return this.prisma.appointment.create({
+    const appointment = await this.prisma.appointment.create({
       data: {
         patientId: dto.patientId,
         doctorId: dto.doctorId,
@@ -78,6 +105,11 @@ export class AppointmentsService {
         specialty: { select: { name: true } },
       },
     });
+
+    // Criar fatura automaticamente
+    await this.billingService.createFromAppointment(appointment.id);
+
+    return appointment;
   }
 
   async updateStatus(id: string, dto: UpdateAppointmentStatusDto) {
@@ -117,13 +149,18 @@ export class AppointmentsService {
 
   async cancel(id: string, reason?: string) {
     await this.findOne(id);
-    return this.prisma.appointment.update({
+    const appointment = await this.prisma.appointment.update({
       where: { id },
       data: {
         status: AppointmentStatus.CANCELLED,
         cancellationReason: reason,
       },
     });
+
+    // Cancelar fatura vinculada
+    await this.billingService.updateStatusFromAppointment(id, PaymentStatus.CANCELLED);
+
+    return appointment;
   }
 
   async getToday() {

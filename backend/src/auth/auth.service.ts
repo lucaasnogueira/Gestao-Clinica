@@ -20,14 +20,28 @@ export class AuthService {
   ) {}
 
   async validateUser(email: string, password: string) {
+    console.log(`[DEBUG] Tentativa de login para: ${email}`);
     const user = await this.prisma.user.findUnique({ where: { email } });
-    if (!user || !user.isActive) {
+    
+    if (!user) {
+      console.log(`[DEBUG] Usuário não encontrado: ${email}`);
       throw new UnauthorizedException("Credenciais inválidas");
     }
+
+    if (!user.isActive) {
+      console.log(`[DEBUG] Usuário inativo: ${email}`);
+      throw new UnauthorizedException("Credenciais inválidas");
+    }
+
+    console.log(`[DEBUG] Comparando senha para: ${email}`);
     const passwordMatch = await bcrypt.compare(password, user.password);
+    
     if (!passwordMatch) {
+      console.log(`[DEBUG] Senha incorreta para: ${email}`);
       throw new UnauthorizedException("Credenciais inválidas");
     }
+
+    console.log(`[DEBUG] Login bem-sucedido para: ${email}`);
     return user;
   }
 

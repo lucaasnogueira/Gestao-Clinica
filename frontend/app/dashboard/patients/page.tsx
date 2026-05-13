@@ -1,19 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { patientService } from '@/lib/services';
-import {
-  Search, Plus, User, Phone, Calendar,
-  AlertTriangle, ChevronLeft, ChevronRight,
+import { 
+  Search, Plus, User, Phone, Calendar, 
+  AlertTriangle, ChevronLeft, ChevronRight, X, Edit, Eye
 } from 'lucide-react';
-import {
+import { 
   cn, formatDate, formatAge, formatCPF, formatPhone,
   BLOOD_TYPE_LABELS,
 } from '@/lib/utils';
 import { PageHeader } from '@/components/shared/page-header';
-import Link from 'next/link';
+import { usePatientList } from '@/hooks/usePatients';
+import { InlinePatientForm } from '@/components/patients/InlinePatientForm';
+import { Button } from '@/components/ui/button';
 import type { Patient } from '@/types';
 
 export default function PatientsPage() {
@@ -22,10 +22,14 @@ export default function PatientsPage() {
   const [page, setPage] = useState(1);
   const limit = 15;
 
-  const { data, isLoading, isFetching } = useQuery({
-    queryKey: ['patients', page, search],
-    queryFn: () => patientService.list({ page, limit, search: search || undefined }),
-    placeholderData: (prev) => prev,
+  // CRUD States
+  const [isAdding, setIsAdding] = useState(false);
+  const [editingItem, setEditingItem] = useState<Patient | null>(null);
+
+  const { data, isLoading, isFetching } = usePatientList({ 
+    page, 
+    limit, 
+    search: search || undefined 
   });
 
   const patients = data?.data ?? [];
@@ -36,22 +40,38 @@ export default function PatientsPage() {
     setPage(1);
   };
 
+  const handleEdit = (p: Patient) => {
+    setEditingItem(p);
+    setIsAdding(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
-    <div className="space-y-5 animate-fade-in">
+    <div className="space-y-5 animate-fade-in pb-10">
       <PageHeader
         title="Pacientes"
         description={
           meta ? `${meta.total.toLocaleString('pt-BR')} pacientes cadastrados` : 'Gerenciar pacientes'
         }
       >
-        <Link
-          href="/dashboard/patients/new"
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium text-sm hover:bg-primary/90 transition-colors shadow-sm"
+        <Button
+          onClick={() => { setIsAdding(!isAdding); setEditingItem(null); }}
+          className={cn('gap-2 transition-all',
+            isAdding ? 'bg-gray-500 hover:bg-gray-600' : 'bg-primary hover:bg-primary/90'
+          )}
         >
-          <Plus className="w-4 h-4" />
-          Novo Paciente
-        </Link>
+          {isAdding ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+          {isAdding ? 'Cancelar' : 'Novo Paciente'}
+        </Button>
       </PageHeader>
+
+      {/* Inline Form */}
+      {isAdding && (
+        <InlinePatientForm 
+          onClose={() => { setIsAdding(false); setEditingItem(null); }} 
+          editingItem={editingItem} 
+        />
+      )}
 
       {/* Search bar */}
       <div className="relative">
@@ -69,12 +89,12 @@ export default function PatientsPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/40">
-                {['Paciente', 'Contato', 'Nascimento', 'Tipo Sang.', 'Alertas', 'Convênio', ''].map((h) => (
+                {['Paciente', 'Contato', 'Nascimento', 'Tipo Sang.', 'Alertas', 'Convênio', 'Ações'].map((h) => (
                   <th key={h} className="text-left px-5 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide whitespace-nowrap">
                     {h}
                   </th>
@@ -105,17 +125,16 @@ export default function PatientsPage() {
                 : patients.map((p: Patient) => (
                   <tr
                     key={p.id}
-                    onClick={() => router.push(`/dashboard/patients/${p.id}`)}
-                    className="border-b border-border last:border-0 hover:bg-muted/25 cursor-pointer transition-colors"
+                    className="border-b border-border last:border-0 hover:bg-muted/25 transition-colors group"
                   >
                     {/* Name + CPF */}
-                    <td className="px-5 py-3.5">
+                    <td className="px-5 py-3.5" onClick={() => router.push(`/dashboard/patients/${p.id}`)}>
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/15 flex items-center justify-center text-xs font-bold text-primary flex-shrink-0">
+                        <div className="w-9 h-9 rounded-full bg-primary/10 border border-primary/15 flex items-center justify-center text-xs font-bold text-primary flex-shrink-0 group-hover:bg-primary group-hover:text-white transition-colors">
                           {p.fullName[0].toUpperCase()}
                         </div>
                         <div>
-                          <p className="font-medium text-foreground">{p.fullName}</p>
+                          <p className="font-semibold text-foreground group-hover:text-primary transition-colors">{p.fullName}</p>
                           <p className="text-xs text-muted-foreground font-mono">{formatCPF(p.cpf)}</p>
                         </div>
                       </div>
@@ -142,7 +161,7 @@ export default function PatientsPage() {
                     {/* Blood */}
                     <td className="px-5 py-3.5">
                       {p.bloodType
-                        ? <span className="text-xs font-bold font-mono bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 rounded">{BLOOD_TYPE_LABELS[p.bloodType]}</span>
+                        ? <span className="text-[10px] font-bold font-mono bg-red-50 text-red-700 border border-red-100 px-2 py-0.5 rounded-full uppercase">{BLOOD_TYPE_LABELS[p.bloodType]}</span>
                         : <span className="text-muted-foreground text-xs">—</span>
                       }
                     </td>
@@ -153,9 +172,9 @@ export default function PatientsPage() {
                         <div className="flex items-center gap-1.5">
                           <AlertTriangle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
                           <span className="text-xs text-amber-700">
-                            {p.allergies.length > 0 && `${p.allergies.length} alergia(s)`}
+                            {p.allergies.length > 0 && `${p.allergies.length} alerg.`}
                             {p.allergies.length > 0 && p.chronicConditions.length > 0 && ' · '}
-                            {p.chronicConditions.length > 0 && `${p.chronicConditions.length} crônica(s)`}
+                            {p.chronicConditions.length > 0 && `${p.chronicConditions.length} crôn.`}
                           </span>
                         </div>
                       ) : <span className="text-muted-foreground text-xs">—</span>}
@@ -164,18 +183,28 @@ export default function PatientsPage() {
                     {/* Insurance */}
                     <td className="px-5 py-3.5">
                       {p.insurance
-                        ? <span className="text-xs bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded">{p.insurance.name}</span>
-                        : <span className="text-muted-foreground text-xs">Particular</span>
+                        ? <span className="text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0.5 rounded-full uppercase">{p.insurance.name}</span>
+                        : <span className="text-muted-foreground text-[10px] uppercase font-bold px-2 py-0.5 bg-gray-50 border border-gray-100 rounded-full">Particular</span>
                       }
                     </td>
 
-                    <td className="px-5 py-3.5" onClick={(e) => e.stopPropagation()}>
-                      <Link
-                        href={`/dashboard/patients/${p.id}`}
-                        className="text-xs text-primary hover:underline font-medium"
-                      >
-                        Ver
-                      </Link>
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => router.push(`/dashboard/patients/${p.id}`)}
+                          className="p-1.5 hover:bg-gray-100 text-gray-400 hover:text-primary rounded-lg transition-colors border border-transparent hover:border-gray-200"
+                          title="Ver Detalhes"
+                        >
+                          <Eye size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleEdit(p)}
+                          className="p-1.5 hover:bg-gray-100 text-gray-400 hover:text-amber-600 rounded-lg transition-colors border border-transparent hover:border-gray-200"
+                          title="Editar"
+                        >
+                          <Edit size={16} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -192,14 +221,14 @@ export default function PatientsPage() {
             </p>
             <div className="flex gap-1">
               <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                onClick={() => { setPage((p) => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                 disabled={page === 1}
                 className="p-1.5 rounded border border-border hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button
-                onClick={() => setPage((p) => Math.min(meta.totalPages, p + 1))}
+                onClick={() => { setPage((p) => Math.min(meta.totalPages, p + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                 disabled={page === meta.totalPages}
                 className="p-1.5 rounded border border-border hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >

@@ -54,17 +54,19 @@ function Field({ label, required, error, full, children }: {
 export default function NewAppointmentPage() {
   const router = useRouter();
   const [searchPatient, setSearchPatient] = useState('');
+  const [showPatientResults, setShowPatientResults] = useState(false);
 
   const { data: patients = [] } = useQuery({
     queryKey: ['patients', 'search', searchPatient],
     queryFn: () => searchPatient.length >= 3 ? patientService.search(searchPatient) : Promise.resolve([]),
-    enabled: searchPatient.length >= 3,
+    enabled: searchPatient.length >= 3 && showPatientResults,
   });
 
-  const { data: doctors = [] } = useQuery({
+  const { data: doctorRes } = useQuery({
     queryKey: ['doctors'],
     queryFn: doctorService.list,
   });
+  const doctors = doctorRes?.data ?? [];
 
   const { data: specialties = [] } = useQuery({
     queryKey: ['specialties'],
@@ -88,16 +90,27 @@ export default function NewAppointmentPage() {
   const mutation = useMutation({
     mutationFn: (data: FormData) => {
       // API expects scheduledAt as ISO string. The input type="datetime-local" gives "YYYY-MM-DDTHH:mm"
-      let isoDate;
-      try {
-        isoDate = new Date(data.scheduledAt).toISOString();
-      } catch (e) {
+      const startDate = new Date(data.scheduledAt);
+      if (isNaN(startDate.getTime())) {
         throw new Error('Data ou hora inválida');
       }
+
+      // Get doctor's consult duration or default to 30 mins
+      const selectedDoctor = doctors.find((d: any) => d.id === data.doctorId);
+      const duration = selectedDoctor?.consultDuration || 30;
+      const endDate = new Date(startDate.getTime() + duration * 60000);
+
       const payload = {
-        ...data,
-        scheduledAt: isoDate,
+        patientId: data.patientId,
+        doctorId: data.doctorId,
+        specialtyId: data.specialtyId || undefined,
+        insuranceId: data.insuranceId || undefined,
+        type: data.type,
+        notes: data.notes || undefined,
+        scheduledAt: startDate.toISOString(),
+        endsAt: endDate.toISOString(),
       };
+
       return appointmentService.create(payload as any);
     },
     onSuccess: () => {
@@ -120,7 +133,19 @@ export default function NewAppointmentPage() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="space-y-5">
+      <form 
+        onSubmit={handleSubmit(
+          (d) => {
+            console.log('Form data:', d);
+            mutation.mutate(d);
+          },
+          (err) => {
+            console.error('Validation errors:', err);
+            toast.error('Verifique os campos obrigatórios');
+          }
+        )} 
+        className="space-y-5"
+      >
         <Section title="Dados da Consulta">
           <Field label="Paciente" required error={errors.patientId?.message} full>
             <div className="relative">
@@ -132,9 +157,13 @@ export default function NewAppointmentPage() {
                 className={cn(input, "pl-10")}
                 placeholder="Buscar paciente por nome ou CPF (mín. 3 caracteres)..."
                 value={searchPatient}
-                onChange={(e) => setSearchPatient(e.target.value)}
+                onChange={(e) => {
+                  setSearchPatient(e.target.value);
+                  setShowPatientResults(true);
+                }}
+                onFocus={() => setShowPatientResults(true)}
               />
-              {patients.length > 0 && (
+              {showPatientResults && patients.length > 0 && (
                 <div className="absolute z-10 w-full mt-1 bg-card border border-border rounded-lg shadow-lg max-h-60 overflow-auto">
                   {patients.map((p) => (
                     <button
@@ -145,9 +174,9 @@ export default function NewAppointmentPage() {
                         selectedPatientId === p.id && "bg-primary/10 text-primary font-medium"
                       )}
                       onClick={() => {
-                        setValue('patientId', p.id);
+                        setValue('patientId', p.id, { shouldValidate: true });
                         setSearchPatient(p.fullName);
-                        // Clear listing after selection
+                        setShowPatientResults(false);
                       }}
                     >
                       <div className="font-medium">{p.fullName}</div>
@@ -156,7 +185,7 @@ export default function NewAppointmentPage() {
                   ))}
                 </div>
               )}
-              <input type="hidden" {...register('patientId')} />
+              <input type="hidden" value={selectedPatientId || ''} {...register('patientId')} />
             </div>
           </Field>
 

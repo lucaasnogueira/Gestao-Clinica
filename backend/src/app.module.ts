@@ -14,6 +14,8 @@ import { InsuranceModule } from './insurance/insurance.module';
 import { BillingModule } from './billing/billing.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ReportsModule } from './reports/reports.module';
+import { CepModule } from './cep/cep.module';
+import { GoalsModule } from './goals/goals.module';
 
 @Module({
   imports: [
@@ -44,6 +46,8 @@ import { ReportsModule } from './reports/reports.module';
     BillingModule,
     NotificationsModule,
     ReportsModule,
+    CepModule,
+    GoalsModule,
   ],
 })
 export class AppModule {}

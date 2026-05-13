@@ -73,6 +73,60 @@ export function formatCEP(cep: string) {
   return cep.replace(/\D/g, '').replace(/(\d{5})(\d{3})/, '$1-$2');
 }
 
+export function formatCNPJ(cnpj: string) {
+  const d = cnpj.replace(/\D/g, '');
+  return d.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+}
+
+export function maskCNPJ(v: string) {
+  const d = v.replace(/\D/g, '').slice(0, 14);
+  if (d.length <= 2) return d;
+  if (d.length <= 5) return d.replace(/(\d{2})(\d+)/, '$1.$2');
+  if (d.length <= 8) return d.replace(/(\d{2})(\d{3})(\d+)/, '$1.$2.$3');
+  if (d.length <= 12) return d.replace(/(\d{2})(\d{3})(\d{3})(\d+)/, '$1.$2.$3/$4');
+  return d.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d+)/, '$1.$2.$3/$4-$5');
+}
+
+export function maskCPF(v: string) {
+  const d = v.replace(/\D/g, '').slice(0, 11);
+  if (d.length <= 3) return d;
+  if (d.length <= 6) return d.replace(/(\d{3})(\d+)/, '$1.$2');
+  if (d.length <= 9) return d.replace(/(\d{3})(\d{3})(\d+)/, '$1.$2.$3');
+  return d.replace(/(\d{3})(\d{3})(\d{3})(\d+)/, '$1.$2.$3-$4');
+}
+
+export function maskPhone(v: string) {
+  const d = v.replace(/\D/g, '').slice(0, 11);
+  if (d.length <= 2) return d.length > 0 ? `(${d}` : d;
+  if (d.length <= 6) return d.replace(/(\d{2})(\d+)/, '($1) $2');
+  if (d.length <= 10) return d.replace(/(\d{2})(\d{4})(\d+)/, '($1) $2-$3');
+  return d.replace(/(\d{2})(\d{5})(\d+)/, '($1) $2-$3');
+}
+
+export function maskCEP(v: string) {
+  const d = v.replace(/\D/g, '').slice(0, 8);
+  if (d.length <= 5) return d;
+  return d.replace(/(\d{5})(\d+)/, '$1-$2');
+}
+
+export function validateCNPJ(cnpj: string) {
+  const d = cnpj.replace(/\D/g, '');
+  if (d.length !== 14) return false;
+  if (/^(\d)\1+$/.test(d)) return false;
+
+  const calc = (s: string, t: number) => {
+    let sum = 0, pos = t - 7;
+    for (let i = t; i >= 1; i--) {
+      sum += parseInt(s.charAt(t - i)) * pos--;
+      if (pos < 2) pos = 9;
+    }
+    const r = sum % 11;
+    return r < 2 ? 0 : 11 - r;
+  };
+
+  return calc(d, 12) === parseInt(d.charAt(12)) && calc(d, 13) === parseInt(d.charAt(13));
+}
+
 export function stripMask(v: string | null | undefined) {
   if (!v) return '';
   return v.replace(/\D/g, '');

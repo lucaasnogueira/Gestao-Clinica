@@ -56,24 +56,34 @@ export const patientService = {
     api.get<Patient[]>('/patients/search', { params: { q } }).then((r) => r.data),
 
   getAppointments: (id: string) =>
-    api.get<Appointment[]>(`/patients/${id}/appointments`).then((r) => r.data),
+    api.get<PaginatedResponse<Appointment>>(`/patients/${id}/appointments`).then((r) => r.data),
 
   getMedicalRecords: (id: string) =>
-    api.get<MedicalRecord[]>(`/patients/${id}/medical-records`).then((r) => r.data),
+    api.get<PaginatedResponse<MedicalRecord>>(`/patients/${id}/medical-records`).then((r) => r.data),
 
   getBills: (id: string) =>
-    api.get<Bill[]>(`/patients/${id}/bills`).then((r) => r.data),
+    api.get<PaginatedResponse<Bill>>(`/patients/${id}/bills`).then((r) => r.data),
+
 };
 
 // ========================
 // DOCTORS
 // ========================
 export const doctorService = {
-  list: () =>
-    api.get<{ data: Doctor[] }>('/doctors').then((r) => r.data.data),
+  list: (params?: Record<string, unknown>) =>
+    api.get<PaginatedResponse<Doctor>>('/doctors', { params }).then((r) => r.data),
 
   get: (id: string) =>
     api.get<Doctor>(`/doctors/${id}`).then((r) => r.data),
+
+  create: (data: any) =>
+    api.post<Doctor>('/doctors', data).then((r) => r.data),
+
+  update: (id: string, data: any) =>
+    api.patch<Doctor>(`/doctors/${id}`, data).then((r) => r.data),
+
+  remove: (id: string) =>
+    api.delete(`/doctors/${id}`).then((r) => r.data),
 
   getBySpecialty: (specialtyId: string) =>
     api.get<Doctor[]>(`/doctors/by-specialty/${specialtyId}`).then((r) => r.data),
@@ -126,6 +136,9 @@ export const medicalRecordService = {
 
   create: (data: Partial<MedicalRecord>) =>
     api.post<MedicalRecord>('/medical-records', data).then((r) => r.data),
+
+  update: (id: string, data: Partial<MedicalRecord>) =>
+    api.patch<MedicalRecord>(`/medical-records/${id}`, data).then((r) => r.data),
 };
 
 // ========================
@@ -170,4 +183,41 @@ export const notificationService = {
 
   markAllRead: () =>
     api.patch('/notifications/read-all').then((r) => r.data),
+};
+
+// ========================
+// CEP / ADDRESS
+// ========================
+export const cepService = {
+  fetch: (cep: string) =>
+    api.get<{
+      zip: string;
+      street: string;
+      neighborhood: string;
+      city: string;
+      state: string;
+      complement?: string;
+    }>(`/cep/${cep}`).then((r) => r.data),
+};
+
+// ========================
+// REPORTS & GOALS
+// ========================
+export const reportService = {
+  getStats: () =>
+    api.get('/reports').then((r) => r.data),
+};
+
+export const goalService = {
+  list: () =>
+    api.get('/goals').then((r) => r.data),
+
+  findByMonth: (month: string) =>
+    api.get('/goals/by-month', { params: { month } }).then((r) => r.data),
+
+  upsert: (data: { type: string; month: string; targetValue: number }) =>
+    api.post('/goals', data).then((r) => r.data),
+
+  remove: (id: string) =>
+    api.delete(`/goals/${id}`).then((r) => r.data),
 };

@@ -48,6 +48,7 @@ export interface Address {
   street: string;
   number: string;
   complement?: string;
+  neighborhood?: string;
   city: string;
   state: string;
   zip: string;
@@ -127,6 +128,7 @@ export interface Doctor {
   isActive: boolean;
   specialties?: { specialty: Specialty }[];
   schedules?: Schedule[];
+  user?: { email: string; isActive: boolean };
   createdAt: string;
   updatedAt: string;
 }
@@ -147,6 +149,7 @@ export interface Appointment {
   cancellationReason?: string;
   insuranceId?: string;
   insurance?: Insurance;
+  medicalRecord?: MedicalRecord;
   createdAt: string;
   updatedAt: string;
 }
@@ -159,16 +162,11 @@ export interface MedicalRecord {
   doctor?: Pick<Doctor, 'id' | 'fullName'>;
   appointmentId?: string;
   chiefComplaint: string;
-  anamnesis?: string;
+  anamnesis: string;
   physicalExam?: string;
   diagnosis?: string;
   cidCode?: string;
-  conduct?: string;
-  observations?: string;
-  attachments: string[];
-  isConfidential: boolean;
-  prescriptions?: Prescription[];
-  exams?: Exam[];
+  conduct: string;
   createdAt: string;
   updatedAt: string;
 }

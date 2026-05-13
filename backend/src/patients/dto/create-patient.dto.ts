@@ -11,9 +11,9 @@ export class CreatePatientDto {
   @MinLength(3)
   fullName: string;
 
-  @ApiProperty({ example: '123.456.789-00' })
+  @ApiProperty({ example: '12345678900' })
   @IsString()
-  @Matches(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/, { message: 'CPF inválido. Use formato: 000.000.000-00' })
+  @Matches(/^\d{11}$/, { message: 'CPF deve conter exatamente 11 dígitos numéricos' })
   cpf: string;
 
   @ApiProperty({ example: '1990-01-15' })
@@ -50,6 +50,7 @@ export class CreatePatientDto {
     street: string;
     number: string;
     complement?: string;
+    neighborhood?: string;
     city: string;
     state: string;
     zip: string;

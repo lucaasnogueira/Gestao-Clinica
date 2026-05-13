@@ -195,6 +195,7 @@ model Schedule {
 model Insurance {
   id        String   @id @default(cuid())
   name      String   @unique
+  cnpj      String?  @unique
   ansCode   String?
   phone     String?
   email     String?
@@ -348,4 +349,16 @@ model AuditLog {
   createdAt DateTime @default(now())
 
   @@map("audit_logs")
+}
+
+model Goal {
+  id          String   @id @default(cuid())
+  type        String   // 'PATIENTS', 'REVENUE', 'APPOINTMENTS'
+  targetValue Float
+  month       String   // Format: YYYY-MM
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([type, month])
+  @@map("goals")
 }

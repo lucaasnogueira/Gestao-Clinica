@@ -1,13 +1,21 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { appointmentService, patientService, billService } from '@/lib/services';
+import { reportService } from '@/lib/services';
 import {
   CalendarDays, Users, TrendingUp, DollarSign,
-  BarChart, PieChart, Activity, Download
+  BarChart, PieChart, Activity, Download, Target, ChevronRight
 } from 'lucide-react';
 import { cn, formatCurrency } from '@/lib/utils';
 import { PageHeader } from '@/components/shared/page-header';
+import Link from 'next/link';
+
+import {
+  BarChart as ReBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip, ResponsiveContainer,
+  PieChart as RePieChart, Pie, Cell, Legend
+} from 'recharts';
+
+const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4'];
 
 function ReportCard({ label, value, icon: Icon, colorClass, sub }: {
   label: string;
@@ -33,24 +41,21 @@ function ReportCard({ label, value, icon: Icon, colorClass, sub }: {
 }
 
 export default function ReportsPage() {
-  const { data: patientsData } = useQuery({
-    queryKey: ['patients', 'meta'],
-    queryFn: () => patientService.list({ limit: 1 }),
+  const { data: reportData, isLoading } = useQuery({
+    queryKey: ['reports'],
+    queryFn: reportService.getStats,
   });
 
-  const { data: billsData } = useQuery({
-    queryKey: ['bills', 'meta'],
-    queryFn: () => billService.list({ limit: 1 }),
-  });
+  const stats = reportData?.stats || {
+    totalPatients: 0,
+    todayAppts: 0,
+    monthlyRevenue: 0,
+    returnRate: 0,
+  };
 
-  const { data: todayAppts = [] } = useQuery({
-    queryKey: ['appointments', 'today'],
-    queryFn: appointmentService.today,
-  });
-
-  const totalPatients = patientsData?.meta?.total ?? 0;
-  const totalBills = billsData?.meta?.total ?? 0;
-  const apptsCount = todayAppts.length;
+  const goals = reportData?.goals || [];
+  const volumeData = reportData?.charts?.volume || [];
+  const specialtiesData = reportData?.charts?.specialties || [];
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -58,45 +63,54 @@ export default function ReportsPage() {
         title="Relatórios"
         description="Indicadores e análises gerenciais da clínica"
       >
-        <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-card text-foreground font-medium text-sm hover:bg-muted transition-colors">
-          <Download className="w-4 h-4" />
-          Exportar PDF
-        </button>
+        <div className="flex items-center gap-3">
+          <Link 
+            href="/dashboard/reports/goals"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-card text-foreground font-medium text-sm hover:bg-muted transition-colors"
+          >
+            <Target className="w-4 h-4" />
+            Gerenciar Metas
+          </Link>
+          <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 transition-opacity">
+            <Download className="w-4 h-4" />
+            Exportar PDF
+          </button>
+        </div>
       </PageHeader>
 
       {/* Main Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <ReportCard
           label="Total de Pacientes"
-          value={totalPatients}
+          value={stats.totalPatients}
           icon={Users}
-          colorClass="bg-blue-50 text-blue-600"
-          sub="+12% este mês"
+          colorClass="bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
+          sub="Pacientes ativos"
         />
         <ReportCard
           label="Agendamentos Hoje"
-          value={apptsCount}
+          value={stats.todayAppts}
           icon={CalendarDays}
-          colorClass="bg-emerald-50 text-emerald-600"
-          sub="85% confirmados"
+          colorClass="bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"
+          sub="Hoje"
         />
         <ReportCard
           label="Faturamento Mensal"
-          value={formatCurrency(45250.00)}
+          value={formatCurrency(stats.monthlyRevenue)}
           icon={DollarSign}
-          colorClass="bg-amber-50 text-amber-600"
-          sub="Previsto: R$ 52.000"
+          colorClass="bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400"
+          sub="Mês atual"
         />
         <ReportCard
           label="Taxa de Retorno"
-          value="64%"
+          value={`${stats.returnRate}%`}
           icon={Activity}
-          colorClass="bg-violet-50 text-violet-600"
-          sub="Média do setor: 58%"
+          colorClass="bg-violet-50 text-violet-600 dark:bg-violet-900/20 dark:text-violet-400"
+          sub="Pacientes recorrentes"
         />
       </div>
 
-      {/* Charts Placeholder Section */}
+      {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-card border border-border rounded-xl p-6 h-[400px] flex flex-col">
           <div className="flex items-center justify-between mb-6">
@@ -109,10 +123,34 @@ export default function ReportsPage() {
               <option>Últimos 30 dias</option>
             </select>
           </div>
-          <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground border-2 border-dashed border-border rounded-lg">
-            <BarChart className="w-12 h-12 mb-2 opacity-10" />
-            <p className="text-sm">Gráfico de barras — Volume por dia</p>
-            <p className="text-xs mt-1">Dados em tempo real</p>
+          <div className="flex-1 w-full min-h-0">
+            <ResponsiveContainer width="100%" height="100%">
+              <ReBarChart data={volumeData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                <XAxis 
+                  dataKey="date" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 10, fill: '#64748b' }}
+                  dy={10}
+                />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 10, fill: '#64748b' }}
+                />
+                <ReTooltip 
+                  contentStyle={{ backgroundColor: 'white', borderRadius: '8px', border: '1px solid #e2e8f0' }}
+                  cursor={{ fill: '#f1f5f9' }}
+                />
+                <Bar 
+                  dataKey="count" 
+                  fill="#3b82f6" 
+                  radius={[4, 4, 0, 0]} 
+                  barSize={32}
+                />
+              </ReBarChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
@@ -123,36 +161,80 @@ export default function ReportsPage() {
               Especialidades mais Procuradas
             </h3>
           </div>
-          <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground border-2 border-dashed border-border rounded-lg">
-            <PieChart className="w-12 h-12 mb-2 opacity-10" />
-            <p className="text-sm">Gráfico de pizza — Distribuição</p>
-            <p className="text-xs mt-1">Baseado em agendamentos</p>
+          <div className="flex-1 w-full min-h-0">
+            <ResponsiveContainer width="100%" height="100%">
+              <RePieChart>
+                <Pie
+                  data={specialtiesData}
+                  cx="50%"
+                  cy="45%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {specialtiesData.map((entry: any, index: number) => (
+                    <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                  ))}
+                </Pie>
+                <ReTooltip />
+                <Legend 
+                  verticalAlign="bottom" 
+                  align="center"
+                  wrapperStyle={{ fontSize: '10px', paddingTop: '20px' }}
+                />
+              </RePieChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>
 
-      {/* Recent Activity Mini-Table */}
+      {/* Goals Progress */}
       <div className="bg-card border border-border rounded-xl p-6">
-        <h3 className="font-bold text-foreground mb-4">Metas do Mês</h3>
-        <div className="space-y-4">
-          {[
-            { label: 'Novos Pacientes', current: 42, target: 50, color: 'bg-blue-500' },
-            { label: 'Faturamento', current: 75, target: 100, color: 'bg-emerald-500' },
-            { label: 'Consultas Realizadas', current: 156, target: 200, color: 'bg-amber-500' },
-          ].map((meta) => (
-            <div key={meta.label} className="space-y-1.5">
-              <div className="flex justify-between text-xs font-medium">
-                <span>{meta.label}</span>
-                <span className="text-muted-foreground">{meta.current}% de {meta.target}%</span>
-              </div>
-              <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                <div 
-                  className={cn("h-full rounded-full transition-all duration-1000", meta.color)} 
-                  style={{ width: `${(meta.current / meta.target) * 100}%` }}
-                />
-              </div>
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="font-bold text-foreground">Metas do Mês</h3>
+          <Link href="/dashboard/reports/goals" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
+            Ver detalhes <ChevronRight className="w-3 h-3" />
+          </Link>
+        </div>
+        
+        <div className="space-y-6">
+          {goals.length === 0 ? (
+            <div className="py-4 text-center text-sm text-muted-foreground border-2 border-dashed border-border rounded-lg">
+              <p>Nenhuma meta definida para este mês.</p>
+              <Link href="/dashboard/reports/goals" className="text-primary mt-2 inline-block">Definir metas agora</Link>
             </div>
-          ))}
+          ) : (
+            goals.map((meta: any) => {
+              const label = meta.type === 'REVENUE' ? 'Faturamento' : 
+                          meta.type === 'PATIENTS' ? 'Novos Pacientes' : 'Consultas Realizadas';
+              const color = meta.type === 'REVENUE' ? 'bg-amber-500' :
+                           meta.type === 'PATIENTS' ? 'bg-blue-500' : 'bg-emerald-500';
+              
+              const currentVal = meta.type === 'REVENUE' ? formatCurrency(meta.currentValue) : meta.currentValue;
+              const targetVal = meta.type === 'REVENUE' ? formatCurrency(meta.targetValue) : meta.targetValue;
+
+              return (
+                <div key={meta.id} className="space-y-2">
+                  <div className="flex justify-between text-xs font-medium">
+                    <span className="flex items-center gap-2">
+                      <div className={cn("w-2 h-2 rounded-full", color)} />
+                      {label}
+                    </span>
+                    <span className="text-muted-foreground">
+                      {currentVal} de {targetVal} ({Math.round(meta.percentage)}%)
+                    </span>
+                  </div>
+                  <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden">
+                    <div 
+                      className={cn("h-full rounded-full transition-all duration-1000", color)} 
+                      style={{ width: `${Math.min(meta.percentage, 100)}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
     </div>

@@ -6,15 +6,18 @@ import { medicalRecordService } from '@/lib/services';
 import { FileText, Search, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { cn, formatDate } from '@/lib/utils';
 import { PageHeader } from '@/components/shared/page-header';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
 export default function MedicalRecordsPage() {
+  const searchParams = useSearchParams();
+  const patientId = searchParams.get('patientId');
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
 
   const { data, isLoading } = useQuery({
-    queryKey: ['medical-records', { page, search }],
-    queryFn: () => medicalRecordService.list({ page, search, limit: 10 }),
+    queryKey: ['medical-records', { page, search, patientId }],
+    queryFn: () => medicalRecordService.list({ page, search, patientId, limit: 10 }),
   });
 
   const records = data?.data ?? [];
@@ -83,11 +86,11 @@ export default function MedicalRecordsPage() {
                     <td className="px-5 py-4 text-muted-foreground line-clamp-1 max-w-xs">{record.chiefComplaint}</td>
                     <td className="px-5 py-4 text-right">
                       <Link
-                        href={`/dashboard/patients/${record.patientId}`}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs font-medium hover:bg-muted transition-colors"
+                        href={`/dashboard/medical-records/${record.id}`}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs font-bold uppercase tracking-wider text-primary hover:bg-primary hover:text-white transition-all shadow-sm active:scale-95"
                       >
                         <Eye className="w-3.5 h-3.5" />
-                        Ver Detalhes
+                        Ver Evolução
                       </Link>
                     </td>
                   </tr>
