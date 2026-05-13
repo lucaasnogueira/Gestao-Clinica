@@ -40,33 +40,41 @@ async function bootstrap() {
   app.setGlobalPrefix('api/v1');
 
   // ── Swagger / OpenAPI ─────────────────────────────────────────────
-  const config = new DocumentBuilder()
-    .setTitle('Clinic Management API')
-    .setDescription('Sistema de Gerenciamento de Clínicas - Documentação da API')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .addTag('auth', 'Autenticação e autorização')
-    .addTag('patients', 'Gestão de pacientes')
-    .addTag('doctors', 'Gestão de médicos')
-    .addTag('appointments', 'Agendamentos')
-    .addTag('medical-records', 'Prontuários eletrônicos')
-    .addTag('billing', 'Faturamento')
-    .addTag('insurance', 'Convênios')
-    .addTag('specialties', 'Especialidades')
-    .addTag('reports', 'Relatórios')
-    .addTag('notifications', 'Notificações')
-    .build();
+  const isProduction = process.env.NODE_ENV === 'production';
+  const showSwagger = process.env.SHOW_SWAGGER === 'true' || !isProduction;
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document, {
-    swaggerOptions: { persistAuthorization: true },
-  });
+  if (showSwagger) {
+    const config = new DocumentBuilder()
+      .setTitle('Clinic Management API')
+      .setDescription('Sistema de Gerenciamento de Clínicas - Documentação da API')
+      .setVersion('1.0')
+      .addBearerAuth()
+      .addTag('auth', 'Autenticação e autorização')
+      .addTag('patients', 'Gestão de pacientes')
+      .addTag('doctors', 'Gestão de médicos')
+      .addTag('appointments', 'Agendamentos')
+      .addTag('medical-records', 'Prontuários eletrônicos')
+      .addTag('billing', 'Faturamento')
+      .addTag('insurance', 'Convênios')
+      .addTag('specialties', 'Especialidades')
+      .addTag('reports', 'Relatórios')
+      .addTag('notifications', 'Notificações')
+      .build();
 
-  const port = process.env.APP_PORT || 3001;
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api/docs', app, document, {
+      swaggerOptions: { persistAuthorization: true },
+    });
+  }
+
+  const port = process.env.PORT || process.env.APP_PORT || 3001;
   await app.listen(port);
 
-  console.log(`\n🏥  Clinic API iniciada em: http://localhost:${port}/api/v1`);
-  console.log(`📚  Swagger docs em:        http://localhost:${port}/api/docs\n`);
+  console.log(`\n🏥  Clinic API iniciada na porta: ${port}`);
+  console.log(`🚀  Ambiente: ${process.env.NODE_ENV || 'development'}`);
+  if (showSwagger) {
+    console.log(`📚  Swagger docs disponível em: /api/docs\n`);
+  }
 }
 
 bootstrap();
