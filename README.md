@@ -1,4 +1,4 @@
-# Gestão Clínica — Portal Aurora 🩺
+# Gestão Clínica 🩺
 
 [![Full Stack](https://img.shields.io/badge/Full%20Stack-Next.js%20%2B%20NestJS-blue)](https://github.com/lucaasnogueira/Gest-o-Clinica)
 [![License](https://img.shields.io/badge/license-UNLICENSED-red)](#)
