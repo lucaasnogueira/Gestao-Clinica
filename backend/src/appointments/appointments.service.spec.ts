@@ -1,8 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppointmentsService } from './appointments.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { BillingService } from '../billing/billing.service';
 import { NotFoundException, ConflictException } from '@nestjs/common';
-import { AppointmentStatus } from '@prisma/client';
+import { AppointmentStatus, PaymentStatus } from '@prisma/client';
 
 describe('AppointmentsService', () => {
   let service: AppointmentsService;
@@ -19,6 +20,11 @@ describe('AppointmentsService', () => {
     },
   };
 
+  const mockBillingService = {
+    createFromAppointment: jest.fn(),
+    updateStatusFromAppointment: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -26,6 +32,10 @@ describe('AppointmentsService', () => {
         {
           provide: PrismaService,
           useValue: mockPrismaService,
+        },
+        {
+          provide: BillingService,
+          useValue: mockBillingService,
         },
       ],
     }).compile();
@@ -56,6 +66,7 @@ describe('AppointmentsService', () => {
 
       expect(result.id).toBe('a1');
       expect(prisma.appointment.create).toHaveBeenCalled();
+      expect(mockBillingService.createFromAppointment).toHaveBeenCalledWith('a1');
     });
 
     it('should throw ConflictException if there is a scheduling conflict', async () => {
@@ -82,6 +93,24 @@ describe('AppointmentsService', () => {
 
       await expect(service.updateStatus('a1', { status: AppointmentStatus.CONFIRMED }))
         .rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('cancel', () => {
+    it('should cancel an appointment and its billing', async () => {
+      const appt = { id: 'a1', status: 'PENDING' };
+      (prisma.appointment.findUnique as jest.Mock).mockResolvedValue(appt);
+      (prisma.appointment.update as jest.Mock).mockResolvedValue({ 
+        ...appt, 
+        status: AppointmentStatus.CANCELLED,
+        cancellationReason: 'Reason'
+      });
+
+      const result = await service.cancel('a1', 'Reason');
+
+      expect(result.status).toBe(AppointmentStatus.CANCELLED);
+      expect(prisma.appointment.update).toHaveBeenCalled();
+      expect(mockBillingService.updateStatusFromAppointment).toHaveBeenCalledWith('a1', PaymentStatus.CANCELLED);
     });
   });
 
