@@ -1,4 +1,4 @@
-# AURORA CRUD Standard — Padrão Oficial de Desenvolvimento
+# Padrão de Desenvolvimento CRUD — Gestão Clínica
 
 Este documento define o padrão arquitetural e visual para todos os módulos CRUD do sistema Gestão Clínica. O objetivo é garantir consistência, performance e uma experiência de usuário "premium".
 

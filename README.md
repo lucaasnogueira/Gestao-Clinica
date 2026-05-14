@@ -3,7 +3,7 @@
 [![Full Stack](https://img.shields.io/badge/Full%20Stack-Next.js%20%2B%20NestJS-blue)](https://github.com/lucaasnogueira/Gest-o-Clinica)
 [![License](https://img.shields.io/badge/license-UNLICENSED-red)](#)
 
-Uma plataforma premium de gestão clínica desenvolvida com foco em excelência visual (UI/UX) e robustez técnica. O projeto implementa o padrão **Aurora Portal**, garantindo interfaces fluidas, dashboards dinâmicos e fluxos de trabalho otimizados para profissionais da saúde.
+Uma plataforma premium de gestão clínica desenvolvida com foco em excelência visual (UI/UX) e robustez técnica. O projeto implementa um sistema moderno de dashboards, garantindo interfaces fluidas e fluxos de trabalho otimizados para profissionais da saúde.
 
 ---
 
@@ -16,7 +16,7 @@ Uma plataforma premium de gestão clínica desenvolvida com foco em excelência 
 
 ### 👥 Gestão de Pacientes & Médicos
 - Cadastro completo com formulários inteligentes e multi-etapa.
-- Padronização **Aurora CRUD** para consistência de interface.
+- Padronização de interface para consistência visual.
 - Filtros avançados e paginação otimizada.
 
 ### 📅 Agendamentos & Prontuários
@@ -56,7 +56,7 @@ Uma plataforma premium de gestão clínica desenvolvida com foco em excelência 
 ```text
 ├── backend/          # API NestJS (Porta 3001)
 ├── frontend/         # Aplicação Next.js (Porta 3000)
-├── docs/             # Documentação de padrões (Aurora Standard)
+├── docs/             # Documentação de padrões (Design Standard)
 └── docker-compose.yml # PostgreSQL & Redis
 ```
 
@@ -103,9 +103,9 @@ O projeto preza pela confiabilidade através de testes automatizados:
 
 ---
 
-## 🎨 Design Principles (Aurora Portal)
+## 🎨 Princípios de Design
 
-Este projeto segue o guia de estilo **Aurora Portal**, que prioriza:
+Este projeto segue um guia de estilo rigoroso, que prioriza:
 - **Aesthetics**: Dark mode nativo, gradientes suaves e micro-animações.
 - **Usability**: Feedback imediato (sonner toasts), estados de loading esqueletizados e acessibilidade.
 - **Scalability**: Componentes altamente reutilizáveis e lógica desacoplada.

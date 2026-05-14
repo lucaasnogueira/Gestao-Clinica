@@ -5,17 +5,17 @@ import { Providers } from '@/components/shared/providers';
 
 export const metadata: Metadata = {
   title: { 
-    default: 'Gestão Clínica — Portal Aurora', 
+    default: 'Gestão Clínica', 
     template: '%s | Gestão Clínica' 
   },
   description: 'A plataforma premium para gestão de clínicas e consultórios. Agendamentos, prontuários eletrônicos e faturamento automatizado.',
   keywords: ['gestão clínica', 'prontuário eletrônico', 'agendamento médico', 'software para clínicas'],
   authors: [{ name: 'Lucas Nogueira' }],
   openGraph: {
-    title: 'Gestão Clínica — Portal Aurora',
+    title: 'Gestão Clínica',
     description: 'Sistema completo para gestão de saúde com foco em UX e eficiência.',
     url: 'https://clinic-management.railway.app',
-    siteName: 'Portal Aurora',
+    siteName: 'Gestão Clínica',
     locale: 'pt_BR',
     type: 'website',
   },
