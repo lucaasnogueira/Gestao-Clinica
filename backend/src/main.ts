@@ -6,8 +6,10 @@ import helmet from 'helmet';
 import * as compression from 'compression';
 
 async function bootstrap() {
+  console.log('🚀 Iniciando processo de bootstrap...');
+
   const app = await NestFactory.create(AppModule, {
-    logger: ['log', 'warn', 'error'],
+    logger: ['log', 'warn', 'error', 'debug'],
   });
 
   // ── Segurança ─────────────────────────────────────────────────────
@@ -39,6 +41,12 @@ async function bootstrap() {
   // ── Prefixo Global da API ─────────────────────────────────────────
   app.setGlobalPrefix('api/v1');
 
+  // Adicionar um endpoint simples de health check no nível do Express
+  const server = app.getHttpAdapter().getInstance();
+  server.get('/health', (req, res) => {
+    res.status(200).send('OK');
+  });
+
   // ── Swagger / OpenAPI ─────────────────────────────────────────────
   const isProduction = process.env.NODE_ENV === 'production';
   const showSwagger = process.env.SHOW_SWAGGER === 'true' || !isProduction;
@@ -67,11 +75,14 @@ async function bootstrap() {
     });
   }
 
-  const port = process.env.PORT || process.env.APP_PORT || 3001;
+  const port = Number(process.env.PORT) || Number(process.env.APP_PORT) || 3001;
   await app.listen(port, '0.0.0.0');
 
-  console.log(`\n🏥  Clinic API iniciada na porta: ${port}`);
+  console.log(`\n🏥  Clinic API iniciada com sucesso!`);
+  console.log(`📡  Porta: ${port}`);
+  console.log(`🌍  Interface: 0.0.0.0`);
   console.log(`🚀  Ambiente: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`✅  Health check disponível em: /health`);
   if (showSwagger) {
     console.log(`📚  Swagger docs disponível em: /api/docs\n`);
   }

@@ -41,8 +41,7 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 
-# Expor a porta
-EXPOSE 3001
+# A porta será definida pelo Railway via variável de ambiente PORT
 
 # Comando de inicialização robusto
 CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main"]
