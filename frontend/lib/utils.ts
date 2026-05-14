@@ -151,6 +151,7 @@ export const ROLE_LABELS: Record<Role, string> = {
   NURSE: 'Enfermeiro(a)',
   RECEPTIONIST: 'Recepcionista',
   PATIENT: 'Paciente',
+  DEMO: 'Demonstração',
 };
 
 export const GENDER_LABELS: Record<Gender, string> = {
