@@ -62,7 +62,9 @@ async function main() {
   const doctorPassword = await bcrypt.hash("Doctor@123", 12);
   const doctorUser = await prisma.user.upsert({
     where: { email: "dr.silva@clinica.com" },
-    update: {},
+    update: {
+      password: doctorPassword,
+    },
     create: {
       email: "dr.silva@clinica.com",
       password: doctorPassword,
@@ -126,7 +128,9 @@ async function main() {
   const receptionistPassword = await bcrypt.hash("Recepcao@123", 12);
   await prisma.user.upsert({
     where: { email: "recepcao@clinica.com" },
-    update: {},
+    update: {
+      password: receptionistPassword,
+    },
     create: {
       email: "recepcao@clinica.com",
       password: receptionistPassword,
