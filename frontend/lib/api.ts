@@ -2,6 +2,10 @@ import axios, { AxiosError } from 'axios';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
+if (typeof window !== 'undefined') {
+  console.log(`[DEBUG] API configurada em: ${BASE_URL}`);
+}
+
 export const api = axios.create({
   baseURL: BASE_URL,
   timeout: 15_000,
