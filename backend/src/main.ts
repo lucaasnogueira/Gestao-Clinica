@@ -40,12 +40,8 @@ async function bootstrap() {
   );
 
   // ── Prefixo Global da API ─────────────────────────────────────────
-  app.setGlobalPrefix('api/v1');
-
-  // Adicionar um endpoint simples de health check no nível do Express
-  const server = app.getHttpAdapter().getInstance();
-  server.get('/health', (req, res) => {
-    res.status(200).send('OK');
+  app.setGlobalPrefix('api/v1', {
+    exclude: ['health'],
   });
 
   // ── Swagger / OpenAPI ─────────────────────────────────────────────

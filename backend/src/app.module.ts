@@ -16,8 +16,10 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { ReportsModule } from './reports/reports.module';
 import { CepModule } from './cep/cep.module';
 import { GoalsModule } from './goals/goals.module';
+import { HealthController } from './health.controller';
 
 @Module({
+  controllers: [HealthController],
   imports: [
     // ── Config global ──────────────────────────────────────────────
     ConfigModule.forRoot({
