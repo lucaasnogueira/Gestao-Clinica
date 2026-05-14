@@ -18,7 +18,10 @@ const GOAL_TYPES = [
   { value: 'APPOINTMENTS', label: 'Agendamentos', icon: CalendarDays, color: 'text-emerald-500' },
 ];
 
+import { useAuthStore } from '@/store/auth.store';
+
 export default function GoalsPage() {
+  const { user } = useAuthStore();
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -150,12 +153,14 @@ export default function GoalsPage() {
                         {new Date(goal.createdAt).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button 
-                          onClick={() => deleteMutation.mutate(goal.id)}
-                          className="p-2 text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {user?.role !== 'DEMO' && (
+                          <button 
+                            onClick={() => deleteMutation.mutate(goal.id)}
+                            className="p-2 text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </td>
                     </tr>
                   );

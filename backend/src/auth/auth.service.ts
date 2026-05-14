@@ -85,6 +85,10 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new UnauthorizedException();
 
+    if (user.role === Role.DEMO) {
+      throw new ForbiddenException("Usuários de demonstração não podem alterar a senha");
+    }
+
     const match = await bcrypt.compare(dto.currentPassword, user.password);
     if (!match) throw new UnauthorizedException("Senha atual incorreta");
 
@@ -102,7 +106,7 @@ export class AuthService {
         { sub: userId, email, role },
         {
           secret: this.configService.get<string>("JWT_SECRET"),
-          expiresIn: this.configService.get<string>("JWT_EXPIRES_IN", "15m"),
+          expiresIn: this.configService.get<string>("JWT_EXPIRES_IN", "8h"),
         },
       ),
       this.jwtService.signAsync(
@@ -111,7 +115,7 @@ export class AuthService {
           secret: this.configService.get<string>("JWT_REFRESH_SECRET"),
           expiresIn: this.configService.get<string>(
             "JWT_REFRESH_EXPIRES_IN",
-            "7d",
+            "30d",
           ),
         },
       ),

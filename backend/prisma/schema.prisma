@@ -18,6 +18,7 @@ enum Role {
   NURSE
   RECEPTIONIST
   PATIENT
+  DEMO
 }
 
 enum AppointmentStatus {

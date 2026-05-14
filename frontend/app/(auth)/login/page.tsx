@@ -118,7 +118,7 @@ export default function LoginPage() {
         <p className="text-xs text-slate-500 font-medium mb-1.5 uppercase tracking-wide">Credenciais de demonstração</p>
         <div className="space-y-1 text-xs font-mono text-slate-400">
           <p>admin@clinica.com / Admin@123</p>
-          <p>recepcao@clinica.com / Recepcao@123</p>
+          <p>demo@clinica.com / Demo@123 (Perfil restrito)</p>
         </div>
       </div>
 

@@ -53,10 +53,12 @@ export default function SettingsPage() {
         <div className="space-y-1">
           {[
             { id: 'profile', label: 'Meu Perfil', icon: User },
-            { id: 'security', label: 'Segurança', icon: Lock },
+            { id: 'security', label: 'Segurança', icon: Lock, roles: ['ADMIN', 'DOCTOR', 'NURSE', 'RECEPTIONIST'] },
             { id: 'notifications', label: 'Notificações', icon: Bell },
-            { id: 'permissions', label: 'Permissões', icon: Shield },
-          ].map((item) => (
+            { id: 'permissions', label: 'Permissões', icon: Shield, roles: ['ADMIN'] },
+          ]
+          .filter(item => !item.roles || (user?.role && item.roles.includes(user.role as any)))
+          .map((item) => (
             <button
               key={item.id}
               className={cn(
@@ -97,44 +99,46 @@ export default function SettingsPage() {
           </div>
 
           {/* Security Section */}
-          <div className="bg-card border border-border rounded-xl p-6">
-            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <Lock className="w-5 h-5 text-primary" />
-              Alterar Senha
-            </h3>
-            <form onSubmit={handleSubmit((d) => changePasswordMutation.mutate(d))} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1.5">Senha Atual</label>
-                <input {...register('currentPassword')} type="password" className={input} placeholder="••••••••" />
-                {errors.currentPassword && <p className="text-destructive text-xs mt-1">{errors.currentPassword.message}</p>}
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {user?.role !== 'DEMO' && (
+            <div className="bg-card border border-border rounded-xl p-6">
+              <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                <Lock className="w-5 h-5 text-primary" />
+                Alterar Senha
+              </h3>
+              <form onSubmit={handleSubmit((d) => changePasswordMutation.mutate(d))} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">Nova Senha</label>
-                  <input {...register('newPassword')} type="password" className={input} placeholder="••••••••" />
-                  {errors.newPassword && <p className="text-destructive text-xs mt-1">{errors.newPassword.message}</p>}
+                  <label className="block text-sm font-medium mb-1.5">Senha Atual</label>
+                  <input {...register('currentPassword')} type="password" className={input} placeholder="••••••••" />
+                  {errors.currentPassword && <p className="text-destructive text-xs mt-1">{errors.currentPassword.message}</p>}
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">Confirmar Nova Senha</label>
-                  <input {...register('confirmPassword')} type="password" className={input} placeholder="••••••••" />
-                  {errors.confirmPassword && <p className="text-destructive text-xs mt-1">{errors.confirmPassword.message}</p>}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5">Nova Senha</label>
+                    <input {...register('newPassword')} type="password" className={input} placeholder="••••••••" />
+                    {errors.newPassword && <p className="text-destructive text-xs mt-1">{errors.newPassword.message}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5">Confirmar Nova Senha</label>
+                    <input {...register('confirmPassword')} type="password" className={input} placeholder="••••••••" />
+                    {errors.confirmPassword && <p className="text-destructive text-xs mt-1">{errors.confirmPassword.message}</p>}
+                  </div>
                 </div>
-              </div>
-              <div className="flex justify-end pt-2">
-                <button
-                  type="submit"
-                  disabled={changePasswordMutation.isPending}
-                  className="flex items-center gap-2 px-6 py-2 rounded-lg bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 disabled:opacity-60 transition-all shadow-sm"
-                >
-                  {changePasswordMutation.isPending ? (
-                    <><Loader2 className="w-4 h-4 animate-spin" /> Salvando...</>
-                  ) : (
-                    <><Save className="w-4 h-4" /> Atualizar Senha</>
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
+                <div className="flex justify-end pt-2">
+                  <button
+                    type="submit"
+                    disabled={changePasswordMutation.isPending}
+                    className="flex items-center gap-2 px-6 py-2 rounded-lg bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 disabled:opacity-60 transition-all shadow-sm"
+                  >
+                    {changePasswordMutation.isPending ? (
+                      <><Loader2 className="w-4 h-4 animate-spin" /> Salvando...</>
+                    ) : (
+                      <><Save className="w-4 h-4" /> Atualizar Senha</>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
 
           {/* Preferences Section (Placeholder) */}
           <div className="bg-card border border-border rounded-xl p-6 opacity-60">

@@ -136,6 +136,23 @@ async function main() {
   console.log("✅ Recepcionista criada");
 
   // ========================
+  // DEMO USER
+  // ========================
+  const demoPassword = await bcrypt.hash("Demo@123", 12);
+  await prisma.user.upsert({
+    where: { email: "demo@clinica.com" },
+    update: {
+      password: demoPassword,
+    },
+    create: {
+      email: "demo@clinica.com",
+      password: demoPassword,
+      role: Role.DEMO,
+    },
+  });
+  console.log("✅ Usuário Demo criado");
+
+  // ========================
   // INSURANCES
   // ========================
   const insurances = [
@@ -191,6 +208,7 @@ async function main() {
   console.log("   Admin:          admin@clinica.com    / Admin@123");
   console.log("   Médico:         dr.silva@clinica.com / Doctor@123");
   console.log("   Recepcionista:  recepcao@clinica.com / Recepcao@123");
+  console.log("   Demo (Restrito): demo@clinica.com    / Demo@123");
 }
 
 main()

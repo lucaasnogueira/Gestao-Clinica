@@ -2,7 +2,7 @@
 // ENUMS
 // ========================
 
-export type Role = 'ADMIN' | 'DOCTOR' | 'NURSE' | 'RECEPTIONIST' | 'PATIENT';
+export type Role = 'ADMIN' | 'DOCTOR' | 'NURSE' | 'RECEPTIONIST' | 'PATIENT' | 'DEMO';
 
 export type AppointmentStatus =
   | 'SCHEDULED'

@@ -87,7 +87,7 @@ export function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-3 space-y-1 overflow-y-auto scrollbar-thin">
-        {NAV_ITEMS.map((item) => {
+        {NAV_ITEMS.filter(item => !item.roles || (user?.role && item.roles.includes(user.role))).map((item) => {
           const Icon = item.icon;
           const active = isActive(item);
           return (
