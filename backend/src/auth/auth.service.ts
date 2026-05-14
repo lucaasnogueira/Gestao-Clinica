@@ -20,28 +20,34 @@ export class AuthService {
   ) {}
 
   async validateUser(email: string, password: string) {
-    console.log(`[DEBUG] Tentativa de login para: ${email}`);
-    const user = await this.prisma.user.findUnique({ where: { email } });
+    const normalizedEmail = email.trim().toLowerCase();
+    console.log(`[DEBUG] Tentativa de login para: ${normalizedEmail}`);
+    
+    const user = await this.prisma.user.findUnique({ 
+      where: { email: normalizedEmail } 
+    });
     
     if (!user) {
-      console.log(`[DEBUG] Usuário não encontrado: ${email}`);
+      console.log(`[DEBUG] Usuário não encontrado no banco: ${normalizedEmail}`);
       throw new UnauthorizedException("Credenciais inválidas");
     }
 
     if (!user.isActive) {
-      console.log(`[DEBUG] Usuário inativo: ${email}`);
+      console.log(`[DEBUG] Usuário encontrado mas está inativo: ${normalizedEmail}`);
       throw new UnauthorizedException("Credenciais inválidas");
     }
 
-    console.log(`[DEBUG] Comparando senha para: ${email}`);
+    console.log(`[DEBUG] Usuário encontrado. Comparando senha... (Input len: ${password.length})`);
     const passwordMatch = await bcrypt.compare(password, user.password);
     
     if (!passwordMatch) {
-      console.log(`[DEBUG] Senha incorreta para: ${email}`);
+      console.log(`[DEBUG] Senha incorreta para: ${normalizedEmail}`);
+      // Log do início do hash para conferência técnica (seguro pois é apenas o prefixo do hash)
+      console.log(`[DEBUG] Prefixo do hash no banco: ${user.password.substring(0, 10)}...`);
       throw new UnauthorizedException("Credenciais inválidas");
     }
 
-    console.log(`[DEBUG] Login bem-sucedido para: ${email}`);
+    console.log(`[DEBUG] Login bem-sucedido para: ${normalizedEmail}`);
     return user;
   }
 
