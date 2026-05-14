@@ -95,6 +95,6 @@
     "testEnvironment": "node"
   },
   "prisma": {
-    "seed": "ts-node -O \"{\\\"module\\\":\\\"commonjs\\\"}\" prisma/seed.ts"
+    "seed": "ts-node --project prisma/tsconfig.seed.json prisma/seed.ts"
   }
 }
