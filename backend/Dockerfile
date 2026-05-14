@@ -44,5 +44,5 @@ COPY --from=builder /app/prisma ./prisma
 # A porta será definida pelo Railway via variável de ambiente PORT
 EXPOSE 3001
 
-# Comando de inicialização robusto com logs extras e seed automático
-CMD ["sh", "-c", "echo '🔄 Iniciando migrações do banco de dados...' && npx prisma migrate deploy && echo '✅ Migração concluída!' && echo '🌱 Iniciando seed do banco de dados...' && npx prisma db seed && echo '✅ Seed concluído!' && echo '🚀 Iniciando aplicação Node...' && node dist/main.js"]
+# Comando de inicialização robusto com logs extras e seed automático (com fallback)
+CMD ["sh", "-c", "echo '🔄 Iniciando migrações do banco de dados...' && npx prisma migrate deploy && echo '✅ Migração concluída!' && echo '🌱 Iniciando seed do banco de dados...' && (npx prisma db seed || echo '⚠️ Seed falhou, mas continuando...') && echo '✅ Processo de inicialização concluído!' && echo '🚀 Iniciando aplicação Node...' && node dist/main.js"]
