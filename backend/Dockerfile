@@ -43,5 +43,5 @@ COPY --from=builder /app/prisma ./prisma
 
 # A porta será definida pelo Railway via variável de ambiente PORT
 
-# Comando de inicialização robusto
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main"]
+# Comando de inicialização robusto com logs extras
+CMD ["sh", "-c", "npx prisma migrate deploy && echo 'Migração concluída, iniciando Node...' && node dist/main.js"]
