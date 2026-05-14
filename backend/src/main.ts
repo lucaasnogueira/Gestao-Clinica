@@ -77,11 +77,14 @@ async function bootstrap() {
   }
 
   const port = Number(process.env.PORT) || Number(process.env.APP_PORT) || 3001;
-  await app.listen(port, '0.0.0.0');
+  const host = '0.0.0.0';
+  
+  await app.listen(port, host);
+  const url = await app.getUrl();
 
   console.log(`\n🏥  Clinic API iniciada com sucesso!`);
-  console.log(`📡  Porta: ${port}`);
-  console.log(`🌍  Interface: 0.0.0.0`);
+  console.log(`📡  Escutando em: ${url}`);
+  console.log(`🌍  Interface: ${host}`);
   console.log(`🚀  Ambiente: ${process.env.NODE_ENV || 'development'}`);
   console.log(`✅  Health check disponível em: /health`);
   if (showSwagger) {
